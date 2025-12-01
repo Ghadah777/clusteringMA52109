@@ -82,3 +82,9 @@ __all__ = [
     # High-level orchestration
     "run_clustering",
 ]
+
+# Import functions from data_analyser module
+from .data_analyser import summarise_numeric
+
+# Import functions from data_exporter module
+from .data_exporter import export_formatted

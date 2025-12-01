@@ -5,41 +5,38 @@
 ###
 
 from __future__ import annotations
-
 import pandas as pd
 
 
 def calculate_descriptive_statistics(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Compute descriptive statistics for each numeric column in the DataFrame.
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-
-    Returns
-    -------
-    stats : pandas.DataFrame
-        Result of `data.describe()` including count, mean, std, etc.
-    """
     if not isinstance(data, pd.DataFrame):
         raise TypeError("data must be a pandas DataFrame.")
     return data.describe()
 
 
 def calculate_correlation(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Compute the correlation matrix for numeric columns in the DataFrame.
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-
-    Returns
-    -------
-    corr : pandas.DataFrame
-        Correlation matrix.
-    """
     if not isinstance(data, pd.DataFrame):
         raise TypeError("data must be a pandas DataFrame.")
     return data.corr(numeric_only=True)
+
+
+def summarise_numeric(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Return summary statistics for each numeric column.
+    Includes: mean, std, min, max, n_missing.
+    Ignores non-numeric columns.
+    """
+    numeric_cols = df.select_dtypes(include="number")
+
+    if numeric_cols.empty:
+        raise ValueError("No numeric columns found in DataFrame.")
+
+    summary = {
+        "mean": numeric_cols.mean(),
+        "std": numeric_cols.std(),
+        "min": numeric_cols.min(),
+        "max": numeric_cols.max(),
+        "n_missing": numeric_cols.isna().sum(),
+    }
+
+    return pd.DataFrame(summary)

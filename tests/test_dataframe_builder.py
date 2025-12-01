@@ -36,3 +36,22 @@ class TestDataFrameBuilder(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_summarise_numeric_function():
+     import pandas as pd
+    from cluster_maker.data_analyser import summarise_numeric
+
+    df = pd.DataFrame({
+        "a": [1, 2, 3, None],
+        "b": [10, 20, 30, 40],
+        "c": [5.5, 6.5, None, 7.5],
+        "d": ["x", "y", "z", "w"],  # non-numeric
+    })
+
+    summary = summarise_numeric(df)
+
+    assert list(summary.index) == ["a", "b", "c"]
+    assert summary.loc["a", "n_missing"] == 1
+    assert summary.loc["b", "n_missing"] == 0
+    assert summary.loc["c", "n_missing"] == 1
+    assert summary.loc["b", "mean"] == 25
