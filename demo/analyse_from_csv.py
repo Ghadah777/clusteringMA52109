@@ -1,63 +1,73 @@
+#!/usr/bin/env python
+"""
+Demo script: analyse_from_csv.py
+
+Usage:
+    python demo/analyse_from_csv.py path/to/input.csv
+"""
+
+from __future__ import annotations
 import sys
 import os
 import pandas as pd
-from cluster_maker.data_analyser import summarise_numeric
-#from cluster_maker.data_exporter import export_summary as exp_sum
 
-OUTPUT_DIR = "demo_output"
+from cluster_maker.data_analyser import summarize_numeric_columns
+from cluster_maker.data_exporter import export_summary
 
 
-def main(args):
-    print("=== cluster_maker: CSV Analysis Demo ===\n")
+def main(argv=None) -> int:
+    # Use command-line arguments if not provided
+    if argv is None:
+        argv = sys.argv
 
-    # Check number of arguments
-    if len(args) != 2:
-        print("ERROR: Incorrect number of arguments.")
-        print("Usage: python demo/analyse_from_csv.py path/to/input.csv")
-        return
+    # Expect exactly 2 arguments: script + CSV file path
+    if len(argv) != 2:
+        script_name = os.path.basename(argv[0])
+        print("ERROR: expected exactly one argument (CSV file path).")
+        print(f"Usage: python demo/{script_name} path/to/input.csv")
+        return 1
 
-    input_path = args[1]
-    print(f"Input CSV file: {input_path}")
+    input_path = argv[1]
 
+    # Check if file exists
     if not os.path.exists(input_path):
         print(f"ERROR: File '{input_path}' does not exist.")
-        return
+        return 1
 
-    # Load CSV
-    print("Reading CSV file...")
-    df = pd.read_csv(input_path)
-    print("CSV loaded successfully.\n")
+    print(f"Reading CSV file: {input_path}")
+    try:
+        df = pd.read_csv(input_path)
+    except Exception as exc:
+        print(f"ERROR: Could not read CSV file: {exc}")
+        return 1
 
-    # Analyse data
-    print("Running numeric summary analysis...")
-    summary = summarise_numeric(df)
-    print("Summary computed.\n")
+    print("Computing numeric summary...")
+    try:
+        summary = summarize_numeric_columns(df)
+    except Exception as exc:
+        print(f"ERROR: Cannot compute summary: {exc}")
+        return 1
 
-    # Ensure output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    # Prepare output folder
+    os.makedirs("demo_output", exist_ok=True)
 
-    # Output paths
-    csv_out = os.path.join(OUTPUT_DIR, "numeric_summary.csv")
-    txt_out = os.path.join(OUTPUT_DIR, "numeric_summary.txt")
+    base_name = os.path.splitext(os.path.basename(input_path))[0]
+    csv_out = os.path.join("demo_output", f"{base_name}_summary.csv")
+    txt_out = os.path.join("demo_output", f"{base_name}_summary.txt")
 
-    # Export
-    print("Exporting summary to files...")
-    # Save summary to CSV
-    summary.to_csv(csv_out, index=True)
+    print("Saving outputs:")
+    print(f"  CSV:  {csv_out}")
+    print(f"  TXT:  {txt_out}")
 
-    # Save summary to text file
-    with open(txt_out, 'w') as f:
-        f.write("Summary Statistics\n")
-        f.write("=" * 50 + "\n\n")
-        f.write(summary.to_string())
+    try:
+        export_summary(summary, csv_out, txt_out)
+    except Exception as exc:
+        print(f"ERROR: Could not export summary files: {exc}")
+        return 1
 
-    print(f"Summary saved to {csv_out}")
-    print(f"Text summary saved to {txt_out}")
-    print("Summary exported successfully:")
-    print(f" - {csv_out}")
-    print(f" - {txt_out}")
+    print("Done.")
+    return 0
 
-    print("\n=== End of analysis ===")
 
 if __name__ == "__main__":
-    main(sys.argv)
+    raise SystemExit(main())

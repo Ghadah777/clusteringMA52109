@@ -58,3 +58,54 @@ def export_formatted(
             f.write(table_str)
     else:
         file.write(table_str)
+
+
+
+
+def export_summary(
+    summary: pd.DataFrame,
+    csv_filename: str,
+    txt_filename: str,
+) -> None:
+    """
+    Export a numeric summary DataFrame to a CSV file and a simple
+    human-readable text report.
+    """
+
+    # --- Basic validation ---
+    if not isinstance(summary, pd.DataFrame):
+        raise TypeError("summary must be a pandas DataFrame.")
+
+    # =============================
+    # 1) Export summary to CSV file
+    # =============================
+    export_to_csv(summary, csv_filename, delimiter=",", include_index=True)
+
+    # =============================
+    # 2) Create human-readable text
+    # =============================
+    lines = []
+
+    for col, row in summary.iterrows():
+
+        # Pick missing value safely (column name may be 'missing' or 'n_missing')
+        if "missing" in row.index:
+            missing_value = row["missing"]
+        else:
+            missing_value = row.get("n_missing", 0)
+
+        # Build summary line
+        line = (
+            f"{col}: "
+            f"mean={row['mean']:.3f}, "
+            f"std={row['std']:.3f}, "
+            f"min={row['min']:.3f}, "
+            f"max={row['max']:.3f}, "
+            f"missing={int(missing_value)}"
+        )
+        lines.append(line)
+
+    report = "\n".join(lines)
+
+    with open(txt_filename, "w", encoding="utf-8") as f:
+        f.write(report)

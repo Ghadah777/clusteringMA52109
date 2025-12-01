@@ -81,10 +81,20 @@ __all__ = [
 
     # High-level orchestration
     "run_clustering",
+
+    "calculate_descriptive_statistics",
+    "calculate_correlation",
+    "summarize_numeric_columns",
+
 ]
 
 # Import functions from data_analyser module
-from .data_analyser import summarise_numeric
+from .data_analyser import (
+    calculate_descriptive_statistics,
+    calculate_correlation,
+    summarize_numeric_columns,
+)
+
 
 # Import functions from data_exporter module
 from .data_exporter import export_formatted

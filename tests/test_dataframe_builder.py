@@ -55,3 +55,31 @@ if __name__ == "__main__":
     assert summary.loc["b", "n_missing"] == 0
     assert summary.loc["c", "n_missing"] == 1
     assert summary.loc["b", "mean"] == 25
+
+import pandas as pd
+from cluster_maker.data_analyser import summarize_numeric_columns
+
+
+class TestSummarizeNumericColumns(unittest.TestCase):
+    def test_summarize_numeric_columns_mixed_df(self):
+        # Create a DataFrame with numeric and non-numeric columns
+        df = pd.DataFrame(
+            {
+                "a": [1.0, 2.0, 3.0, None],
+                "b": [10, 20, 30, 40],
+                "c": [0.5, 0.5, 0.5, 0.5],
+                "label": ["x", "y", "z", "w"],  # non-numeric column
+            }
+        )
+
+        # Run the function
+        summary = summarize_numeric_columns(df)
+
+        # Must contain only numeric columns
+        self.assertEqual(set(summary.index), {"a", "b", "c"})
+
+        # Column "a" has 1 missing value
+        self.assertEqual(summary.loc["a", "missing"], 1)
+
+        # Mean of b = (10 + 20 + 30 + 40) / 4 = 25
+        self.assertAlmostEqual(summary.loc["b", "mean"], 25.0, places=6)
