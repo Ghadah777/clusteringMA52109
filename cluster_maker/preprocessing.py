@@ -67,3 +67,36 @@ def standardise_features(X: np.ndarray) -> np.ndarray:
         raise TypeError("X must be a NumPy array.")
     scaler = StandardScaler()
     return scaler.fit_transform(X)
+
+from sklearn.decomposition import PCA
+
+
+def apply_pca(X: np.ndarray, n_components: int = 2) -> np.ndarray:
+    """
+    Apply PCA to reduce the dimensionality of the feature matrix.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Standardised feature matrix.
+    n_components : int, default=2
+        Number of principal components to keep.
+
+    Returns
+    -------
+    numpy.ndarray
+        The PCA-transformed feature matrix with shape
+        (n_samples, n_components).
+    """
+    if not isinstance(X, np.ndarray):
+        raise TypeError("X must be a NumPy array.")
+
+    if n_components <= 0:
+        raise ValueError("n_components must be a positive integer.")
+
+    if n_components > X.shape[1]:
+        raise ValueError("n_components cannot exceed the number of features.")
+
+    pca = PCA(n_components=n_components)
+    X_pca = pca.fit_transform(X)
+    return X_pca

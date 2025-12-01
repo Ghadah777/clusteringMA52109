@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
 
-from .preprocessing import select_features, standardise_features
+from .preprocessing import select_features, standardise_features, apply_pca
 from .algorithms import kmeans, sklearn_kmeans
 from .evaluation import compute_inertia, elbow_curve, silhouette_score_sklearn
 from .plotting_clustered import plot_clusters_2d, plot_elbow
@@ -28,6 +28,8 @@ def run_clustering(
     random_state: Optional[int] = None,
     compute_elbow: bool = False,
     elbow_k_values: Optional[List[int]] = None,
+    use_pca: bool = False,
+    pca_components: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     High-level function to run the full clustering workflow.
@@ -89,6 +91,11 @@ def run_clustering(
         labels, centroids = sklearn_kmeans(X, k=k, random_state=random_state)
     else:
         raise ValueError(f"Unknown algorithm '{algorithm}'. Use 'kmeans' or 'sklearn_kmeans'.")
+
+    # Optional PCA step
+    if use_pca:
+        n_comp = pca_components or min(2, X.shape[1])
+        X = apply_pca(X, n_components=n_comp)
 
     # Compute metrics
     inertia = compute_inertia(X, labels, centroids)
